@@ -1,0 +1,7 @@
+env: "dev"
+storage_path: "storage/storage.db"
+log_file_path: "internal/logfile/log.txt"
+http_server:
+  address: "localhost:8080"
+https_server:
+  address: "localhost:8443"

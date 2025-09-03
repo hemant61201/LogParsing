@@ -1,21 +1,72 @@
 package main
 
 import (
-  "fmt"
+	"LogParsing/internal/config"
+	"LogParsing/internal/storage/sqlite"
+	"log"
+	"log/slog"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
-
 func main() {
-  //TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-  // to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-  s := "gopher"
-  fmt.Printf("Hello and welcome, %s!\n", s)
 
-  for i := 1; i <= 5; i++ {
-	//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-	// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-	fmt.Println("i =", 100/i)
-  }
+	// load config
+	slog.Info("Loading config...")
+
+	config := config.MustLoad()
+
+	slog.Info("Config loaded successfully.")
+
+	// setup database
+
+	slog.Info("Connecting to database...")
+
+	storage, err := sqlite.NewSqlite(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("Database initialized", slog.String("env", config.Env), slog.String("version", "1.0.0"))
+
+	//start reading log file
+
+	//logs := loading.LoadLogs{FileName: config.LogFilePath}
+	//
+	//slog.Info("Loading logs...", slog.String("logFilePath", config.LogFilePath))
+	//
+	//if err := logs.Load(); err != nil {
+	//	slog.Error("Load failed", slog.String("err", err.Error()))
+	//	return
+	//}
+	//
+	//slog.Info("Parsing logs...")
+	//
+	//parsing.Parse(storage)
+
+	// setup router
+
+	router := gin.New()
+
+	router.GET("/logs/{logType}", func(context *gin.Context) {
+
+		//slog.Info("Getting logs from database",
+		//	slog.String("logType", context.Param("logType")),
+		//)
+
+		result, err := storage.GetLog(context.Param("logType"))
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"result": result,
+		})
+	})
+
+	router.Run(config.Addr)
 }
