@@ -83,7 +83,7 @@ func (sqlite *Sqlite) GetLog(logType string) ([]types.LogParsing, error) {
 	for rows.Next() {
 		var log types.LogParsing
 
-		err := rows.Scan(&log.Id, &log.DateTime, &log.LogMessage, &log.LogType)
+		err := rows.Scan(&log.Id, &log.DateTime, &log.LogType, &log.LogMessage)
 
 		if err != nil {
 			return nil, err
@@ -118,7 +118,7 @@ func (sqlite *Sqlite) GetAllLog() ([]types.LogParsing, error) {
 	for rows.Next() {
 		var log types.LogParsing
 
-		err := rows.Scan(&log.Id, &log.DateTime, &log.LogMessage, &log.LogType)
+		err := rows.Scan(&log.Id, &log.DateTime, &log.LogType, &log.LogMessage)
 
 		if err != nil {
 			return nil, err
