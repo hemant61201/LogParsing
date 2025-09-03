@@ -94,3 +94,38 @@ func (sqlite *Sqlite) GetLog(logType string) ([]types.LogParsing, error) {
 
 	return logs, nil
 }
+
+func (sqlite *Sqlite) GetAllLog() ([]types.LogParsing, error) {
+
+	stmt, err := sqlite.Db.Prepare("SELECT * FROM logs")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var logs []types.LogParsing
+
+	for rows.Next() {
+		var log types.LogParsing
+
+		err := rows.Scan(&log.Id, &log.DateTime, &log.LogMessage, &log.LogType)
+
+		if err != nil {
+			return nil, err
+		}
+
+		logs = append(logs, log)
+	}
+
+	return logs, nil
+}
